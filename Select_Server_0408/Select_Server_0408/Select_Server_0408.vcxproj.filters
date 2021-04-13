@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="헤더 파일\Process">
+      <UniqueIdentifier>{64a1ae37-b6c6-4f7b-9025-8a397654f164}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\ChattingRoom">
+      <UniqueIdentifier>{ed156788-0836-4543-b97e-f51aab5d4e47}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -47,6 +53,15 @@
     </ClInclude>
     <ClInclude Include="PacketUtil.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Process.h">
+      <Filter>헤더 파일\Process</Filter>
+    </ClInclude>
+    <ClInclude Include="ChatRoomUtil.h">
+      <Filter>헤더 파일\ChattingRoom</Filter>
+    </ClInclude>
+    <ClInclude Include="ChatRoom.h">
+      <Filter>헤더 파일\ChattingRoom</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -39,10 +39,14 @@ enum class PROTOCOL
 	Init = 1,			// 서버 접속시 메세지
 	WaitingRoom_Menu,	// server : 방 선택 메세지
 						// client : 선택한 방
-	JoinChatRoom,		// server : 해당 방에 집어넣기
+	EnterChatRoom,		// server : 해당 방에 집어넣기
 						// client :	
-	OutOfRoom,			// server :	해당 클라이언트 참가한 방에서 강제로 나가도록
-						// client :	참가한 방에서 나가면
+	Chat,				// 채팅 메세지
+	ExitChatRoom,		// server :	해당 클라이언트 참가한 방에서 강제로 나가도록
+	
+	Disconnect,			// server : 접속 종료 패킷
+						// client : 접속 종료 패킷
+	Max
 };
 
 enum class SIGN_RESULT
@@ -79,6 +83,19 @@ enum class SendState
 	Max
 };
 
+enum class myState
+{
+	None = 0,
+	Wait,		// 메뉴 오기 전
+	SelectRoom,	// 메뉴 온 후 선택
+	Chatting,	// 채팅입력
+
+	End,
+
+	Max
+};
+
+class MyInfo;
 
 class OutputMemoryStream;
 class InputMemoryStream;
@@ -92,6 +109,7 @@ using RecvPacketPtr = std::shared_ptr<RecvPacket>;
 using SendPacketPtr = std::shared_ptr<SendPacket>;
 using TCPSocketPtr = std::shared_ptr<TCPSocket>;
 
+#include "MyInfo.h"
 
 #include "SocketUtil.h"
 #include "MemoryStream.h"
@@ -99,4 +117,7 @@ using TCPSocketPtr = std::shared_ptr<TCPSocket>;
 #include "SocketAddress.h"
 #include "TCPSocket.h"
 #include "NetworkManager.h"
+
 #include "Client.h"
+
+#include "RecvThread.h"

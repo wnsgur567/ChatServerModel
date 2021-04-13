@@ -24,6 +24,8 @@
 #define BUFSIZE		512
 #define SOCKET_END	0
 
+#define MAX_PARTICIPANT	100	// 한 방 최대 참가자
+
 using StateType = unsigned int;
 
 enum class ClientState : StateType
@@ -45,7 +47,7 @@ enum class ClientState : StateType
 	WaitingRoom_send		= 1 << 21,		// 채팅 대기실 (방 선택)
 
 	JoinningChatRoom		= 1 << 22,		// 채팅방 접속 중
-	//JoinningChatRoom_send	= 1 << 23,		// 채팅방 접속 중
+	JoinningChatRoom_send	= 1 << 23,		// 채팅방 접속 중
 
 	JoinedChatRoom			= 1 << 24,		// 채팅방 접속 완료
 	JoinedChatRoom_send		= 1 << 25,		// 채팅방 접속 완료
@@ -69,10 +71,14 @@ enum class PROTOCOL
 	Init = 1,			// 서버 접속시 메세지
 	WaitingRoom_Menu,	// server : 방 선택 메세지
 						// client : 선택한 방
-	JoinChatRoom,		// server : 해당 방에 집어넣기
+	EnterChatRoom,		// server : 해당 방에 집어넣기
 						// client :	
-	OutOfRoom,			// server :	해당 클라이언트 참가한 방에서 강제로 나가도록
+	Chat,				// 채팅 메세지
+	ExitChatRoom,		// server :	해당 클라이언트 참가한 방에서 강제로 나가도록
 						// client :	참가한 방에서 나가면
+	Disconnect,			// server : 접속 종료 패킷
+						// client : 접속 종료 패킷
+	Max
 };
 
 enum class SIGN_RESULT
@@ -129,6 +135,7 @@ class RecvPacket;
 class SendPacket;
 class TCPSocket;
 class ClientInfo;
+class ChatRoom;
 
 using OutputMemoryStreamPtr = std::shared_ptr<OutputMemoryStream>;
 using InputMemoryStreamPtr = std::shared_ptr<InputMemoryStream>;
@@ -136,6 +143,8 @@ using RecvPacketPtr = std::shared_ptr<RecvPacket>;
 using SendPacketPtr = std::shared_ptr<SendPacket>;
 using TCPSocketPtr = std::shared_ptr<TCPSocket>;
 using ClientInfoPtr = std::shared_ptr<ClientInfo>;
+using ChatRoomPtr = std::shared_ptr<ChatRoom>;
+
 
 #include "MemoryStream.h"
 #include "PacketUtil.h"
@@ -147,3 +156,7 @@ using ClientInfoPtr = std::shared_ptr<ClientInfo>;
 #include "ClientInfo.h"
 #include "NetworkManager.h"
 #include "Server.h"
+
+#include "Process.h"
+#include "ChatRoom.h"
+#include "ChatRoomUtil.h"

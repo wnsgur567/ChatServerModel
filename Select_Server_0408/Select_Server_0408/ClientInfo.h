@@ -11,6 +11,8 @@ private:
 	string					 m_name;
 	int						 m_clientID;	// client 고유 id값
 
+	int						 m_chatRoomID;	// 현재 접속해있는 채팅 room id
+
 	bool m_isSignIn;			// 현재 로그인 되어있는 상태인지
 	bool m_isConnected;			// 현재 연결되어있는 상태인지 (Accept() 이후)
 	bool m_isJoinChatRoom;		// 채팅방에 입장한 상태인지		
@@ -22,6 +24,10 @@ public:
 	SocketAddress&		GetAddress()						{ return m_sockaddr; }
 
 	int					GetID() const						{ return m_clientID; }
+	string				GetName() const						{ return m_name; }
+	void				SetName(string inNmae)				{ m_name = inNmae; } 
+	int					GetChatRoomID() const				{ return m_chatRoomID; }
+	void				SetChatRoomID(int inID)				{ m_chatRoomID = inID; }
 	bool				IsSignIn() const					{ return m_isSignIn; }
 	void				SetIsSignIn(bool isSignIn)			{ m_isSignIn = isSignIn; }
 	bool				IsConnected() const					{ return m_isConnected; }

@@ -42,13 +42,26 @@ public:
 	{
 		m_state = inState;
 	}
+
+	void Clear()
+	{
+		m_state = RecvState::Idle;
+		m_sizebytes = 0;
+		m_recvbytes = 0;
+		m_target_recvbytes = 0;
+	}
+
 	InputMemoryStreamPtr ToStreamPtr()
 	{
+		if (m_state != RecvState::Completed)
+			return nullptr;
 		return std::make_shared<InputMemoryStream>(m_buf, m_recvbytes);
 	}
 	// m_buf 를 memcpy 해서 스트림으로 반환
 	InputMemoryStreamPtr ToCopyStreamPtr()
 	{
+		if (m_state != RecvState::Completed)
+			return nullptr;
 		char* tmpbuf = new char[m_recvbytes];
 		memcpy(tmpbuf, m_buf, m_recvbytes);
 		return std::make_shared<InputMemoryStream>(m_buf, m_recvbytes, true);
@@ -90,6 +103,7 @@ public:
 	static SendState PacketSend(const TCPSocketPtr inSock, SendPacketPtr inoutPacket);
 	static RecvState PacketRecv(const TCPSocketPtr inSock, RecvPacketPtr inoutPacket);
 
+	static void PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol);
 	static void PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol, const char* str1);
 	static void PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol, const int inNum);
 	static void PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol, const int inNum, const char* str1);

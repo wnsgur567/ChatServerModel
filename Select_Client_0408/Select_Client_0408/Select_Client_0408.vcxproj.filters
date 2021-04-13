@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="헤더 파일\Client">
+      <UniqueIdentifier>{d9b5b482-19d3-4aa7-8918-34009b88b592}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Client">
+      <UniqueIdentifier>{69f91120-15f5-4077-b8ef-d9b95d6a8217}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SocketUtil.h">
@@ -39,6 +45,12 @@
     <ClInclude Include="PacketUtil.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="RecvThread.h">
+      <Filter>헤더 파일\Client</Filter>
+    </ClInclude>
+    <ClInclude Include="MyInfo.h">
+      <Filter>헤더 파일\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SocketUtil.cpp">
@@ -61,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="PacketUtil.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="RecvThread.cpp">
+      <Filter>소스 파일\Client</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -140,12 +140,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="base.h" />
+    <ClInclude Include="ChatRoom.h" />
+    <ClInclude Include="ChatRoomUtil.h" />
     <ClInclude Include="ClientInfo.h" />
     <ClInclude Include="MemoryStream.h" />
     <ClInclude Include="MessageMaker.h" />
     <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketUtil.h" />
+    <ClInclude Include="Process.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="SocketAddress.h" />
     <ClInclude Include="SocketUtil.h" />

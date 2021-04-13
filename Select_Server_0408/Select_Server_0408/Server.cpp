@@ -25,6 +25,9 @@ bool Server::StaticInit()
 
 void Server::Run()
 {
+	if (false == NetworkManager::sInstance->TestInitializeChatRooms())
+		return;
+
 	Loop();
 }
 
@@ -35,7 +38,7 @@ void Server::Loop()
 		static_cast<StateType>(ClientState::UnstableConnection_send) |
 		static_cast<StateType>(ClientState::Disconnected_send) |
 		static_cast<StateType>(ClientState::WaitingRoom_send) |
-		static_cast<StateType>(ClientState::JoinningChatRoom)
+		static_cast<StateType>(ClientState::JoinedChatRoom_send)
 		;
 
 	// select 마스크 적용

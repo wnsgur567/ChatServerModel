@@ -33,34 +33,97 @@ bool NetworkManager::Init(const char* inIp, u_int inPort)
 
 bool NetworkManager::DoFrame()
 {
-	// 처리부
-
-	// test
-	RecvPacketPtr _recvpacket = std::make_shared<RecvPacket>();
-	PacketUtil::PacketRecv(m_sock, _recvpacket);
-	auto _stream = _recvpacket->ToStreamPtr();
-	PROTOCOL protocol = PacketUtil::GetProtocol(*_stream);
-	switch (protocol)
+	switch (m_myInfo.GetState())
 	{
-	case PROTOCOL::None:
+	case myState::Wait:
+		// 서버로 부터 출력 메뉴가 들어온 후
+		WaitForSingleObject(m_myInfo.hSelectRoom, INFINITE);
 		break;
-	case PROTOCOL::Init:
-		char msg[512];
-		ZeroMemory(msg, 512);
-		PacketUtil::UnPackPacket(*_stream, msg);
-		printf(msg);
+	case myState::SelectRoom:
+	{
+		printf("방 번호 선택 : ");
+ 		int select = 0;		
+		scanf("%d", &select);
+		while (getchar() != '\n')
+		{	// 버퍼 비우기
+		}
+
+
+		switch (select)
+		{
+		case -1:
+		default:
+		{
+			// 종료 패킷 보내기
+			OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
+			PacketUtil::PackPacket(*_stream, PROTOCOL::Disconnect);
+			SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
+			PacketUtil::PacketSend(m_sock, _sendpacket);
+			m_myInfo.SetState(myState::End);
+		}
 		break;
-	case PROTOCOL::WaitingRoom_Menu:
+		case 0:
+		case 1:
+		case 2:
+		{
+			char buf[BUFSIZE];
+			ZeroMemory(buf, BUFSIZE);			
+			printf("닉네임 입력 : ");
+			gets_s(buf, BUFSIZE);
+			
+
+			OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
+			PacketUtil::PackPacket(*_stream, PROTOCOL::EnterChatRoom, select, buf);
+			SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
+			PacketUtil::PacketSend(m_sock, _sendpacket);
+
+			WaitForSingleObject(m_myInfo.hChatting, INFINITE);
+		}
 		break;
-	case PROTOCOL::JoinChatRoom:
-		break;
-	case PROTOCOL::OutOfRoom:
-		break;
+		}
+	}
+	break;
+	case myState::Chatting:
+	{
+		char buf[BUFSIZE];
+		ZeroMemory(buf, BUFSIZE);
+		scanf("%s", buf);		// 채팅내용 입력
+
+		if (strcmp(buf, "exit") == 0)
+		{
+			// end packet
+			OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
+			PacketUtil::PackPacket(*_stream, PROTOCOL::ExitChatRoom);
+			SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
+			PacketUtil::PacketSend(m_sock, _sendpacket);
+			m_myInfo.SetState(myState::Wait);
+			ResetEvent(m_myInfo.hChatting);
+		}
+		else
+		{
+			// 채팅내용 전송
+			OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
+			PacketUtil::PackPacket(*_stream, PROTOCOL::Chat, buf);
+			SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
+			PacketUtil::PacketSend(m_sock, _sendpacket);
+		}
+
+	}
+	break;
+	case myState::End:
+		return false;
 	default:
 		break;
 	}
-	
+
+
+
+
+
+
+
 
 
 	return true;
 }
+

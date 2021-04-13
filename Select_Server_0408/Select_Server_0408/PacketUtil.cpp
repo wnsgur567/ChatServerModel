@@ -18,6 +18,11 @@ SendState PacketUtil::PacketSend(const TCPSocketPtr inSock, SendPacketPtr inoutP
 			0
 		);
 
+		if (_sendbytes == SOCKET_ERROR)
+		{
+			return SendState::ClientEnd;
+		}
+
 		// 보낸만큼 헤드 이동
 		inoutPacket->m_sendbytes += _sendbytes;
 
@@ -59,6 +64,11 @@ RecvState PacketUtil::PacketRecv(const TCPSocketPtr inSock, RecvPacketPtr inoutP
 			((char*)&(inoutPacket->m_target_recvbytes)) + inoutPacket->m_sizebytes,	// buf
 			(inoutPacket->m_target_sizebytes - inoutPacket->m_sizebytes),			// len
 			0);	// flag		
+				
+		if (_recvbytes == SOCKET_ERROR)
+		{
+			return RecvState::ClientEnd;
+		}
 
 		// 읽어드린 만큼 head 이동
 		inoutPacket->m_sizebytes += _recvbytes;
@@ -93,6 +103,11 @@ RecvState PacketUtil::PacketRecv(const TCPSocketPtr inSock, RecvPacketPtr inoutP
 			inoutPacket->m_target_recvbytes - inoutPacket->m_recvbytes,	// len
 			0	// flag
 		);
+
+		if (_recvbytes == SOCKET_ERROR)
+		{
+			return RecvState::ClientEnd;
+		}
 
 		// 읽어드린 만큼 head 이동
 		inoutPacket->m_recvbytes += _recvbytes;

@@ -142,8 +142,10 @@
     <ClInclude Include="base.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="MemoryStream.h" />
+    <ClInclude Include="MyInfo.h" />
     <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="PacketUtil.h" />
+    <ClInclude Include="RecvThread.h" />
     <ClInclude Include="SocketAddress.h" />
     <ClInclude Include="SocketUtil.h" />
     <ClInclude Include="TCPSocket.h" />
@@ -154,6 +156,7 @@
     <ClCompile Include="MemoryStream.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="PacketUtil.cpp" />
+    <ClCompile Include="RecvThread.cpp" />
     <ClCompile Include="SocketUtil.cpp" />
     <ClCompile Include="TCPSocket.cpp" />
   </ItemGroup>

@@ -42,13 +42,26 @@ public:
 	{
 		m_state = inState;
 	}
+
+	void Clear()
+	{
+		m_state = RecvState::Idle;
+		m_sizebytes = 0;
+		m_recvbytes = 0;
+		m_target_recvbytes = 0;
+	}
+
 	InputMemoryStreamPtr ToStreamPtr()
 	{
+		if (m_state != RecvState::Completed)
+			return nullptr;
 		return std::make_shared<InputMemoryStream>(m_buf, m_recvbytes);
 	}
 	// m_buf 를 memcpy 해서 스트림으로 반환
 	InputMemoryStreamPtr ToCopyStreamPtr()
 	{
+		if (m_state != RecvState::Completed)
+			return nullptr;
 		char* tmpbuf = new char[m_recvbytes];
 		memcpy(tmpbuf, m_buf, m_recvbytes);
 		return std::make_shared<InputMemoryStream>(m_buf, m_recvbytes, true);
@@ -80,6 +93,14 @@ public:
 	void SetState(SendState inState)
 	{
 		m_state = inState;
+	}
+
+	void Clear()
+	{
+		m_state = SendState::Idle;
+		m_sendbytes = 0;
+		m_target_sendbytes = 0;
+		streamPtr.reset();
 	}
 };
 

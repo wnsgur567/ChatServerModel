@@ -10,5 +10,5 @@ public:
 	~Client() {}
 	static std::unique_ptr< Client> sInstance;
 	static bool StaticInit();
-	void Run();
+	void Run();	
 };
