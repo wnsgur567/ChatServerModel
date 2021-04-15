@@ -148,10 +148,16 @@ bool NetworkManager::DoFrame()
 		break;
 		case ClientState::WaitingRoom_send:
 			SendChatRoomList(_clientinfo_ptr);
-			_clientinfo_ptr->SetState(ClientState::JoinningChatRoom);
+			_clientinfo_ptr->SetState(ClientState::EnterChatRoom);
+			break;
+
+		case ClientState::EnterChatRoom_send:
+
 			break;
 		case ClientState::JoinedChatRoom_send:
 
+			break;
+		case ClientState::ExitChatRoom_send:
 			break;
 		
 		default:
@@ -362,6 +368,10 @@ void NetworkManager::HandleRecvQueue()
 		break;
 		case PROTOCOL::ExitChatRoom:
 			_clientinfo_ptr->SetState(ClientState::Standby_send);
+			break;			
+		case PROTOCOL::Disconnect:
+
+			_clientinfo_ptr->SetState(ClientState::Disconnected);
 			break;
 		}
 	}
@@ -496,20 +506,17 @@ void NetworkManager::SendChatRoomList(ClientInfoPtr inClient)
 
 void NetworkManager::SendEnterRoomMsg(ChatRoomPtr inChatRoom, const char* inName)
 {
-
-	OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
 	char msg[BUFSIZE];
 	ZeroMemory(msg, BUFSIZE);
-	MessageMaker::Get_EnterRoomMsg(msg, inName);
-
-	PacketUtil::PackPacket(*_stream, PROTOCOL::EnterChatRoom, msg);
-
-	// _stream -> packet
-	SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
+	MessageMaker::Get_EnterRoomMsg(msg, inName);	
 
 	// sendqueue에 등록
 	for (auto _clientinfo_ptr : inChatRoom->m_participants)
 	{
+		OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
+		PacketUtil::PackPacket(*_stream, PROTOCOL::EnterChatRoom, msg);
+		// _stream -> packet
+		SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
 		m_sendQueue.push(
 			std::pair<ClientInfoPtr, SendPacketPtr>(_clientinfo_ptr, _sendpacket)
 		);
@@ -517,24 +524,21 @@ void NetworkManager::SendEnterRoomMsg(ChatRoomPtr inChatRoom, const char* inName
 }
 
 void NetworkManager::SendExitRoomMsg(ChatRoomPtr inChatRoom, const char* inName)
-{
-	// 우선 enter 기준으로 생각해보자구
-	// enter 패킷을 먼저 만들자
-
-	OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
+{	
 	char msg[BUFSIZE];
 	ZeroMemory(msg, BUFSIZE);
 	MessageMaker::Get_ExitRoomMsg(msg, inName);
-
-	PacketUtil::PackPacket(*_stream, PROTOCOL::ExitChatRoom, msg);
-
-	// _stream -> packet
-	SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
+	
 
 	// sendqueue에 등록
 
 	for (auto _clientinfo_ptr : inChatRoom->m_participants)
 	{
+		OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
+		PacketUtil::PackPacket(*_stream, PROTOCOL::ExitChatRoom, msg);
+
+		// _stream -> packet
+		SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
 		m_sendQueue.push(
 			std::pair<ClientInfoPtr, SendPacketPtr>(_clientinfo_ptr, _sendpacket)
 		);
@@ -542,23 +546,20 @@ void NetworkManager::SendExitRoomMsg(ChatRoomPtr inChatRoom, const char* inName)
 }
 
 void NetworkManager::SendChatMsg(ChatRoomPtr inChatRoom, const char* inName, const char* inMsg)
-{
-	// 우선 enter 기준으로 생각해보자구
-	// enter 패킷을 먼저 만들자
-
-	OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
+{	
 	char msg[BUFSIZE];
 	ZeroMemory(msg, BUFSIZE);
 	MessageMaker::Get_ChatMsg(msg, inName, inMsg);
 
-	PacketUtil::PackPacket(*_stream, PROTOCOL::Chat, msg);
-
-	// _stream -> packet
-	SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
 
 	// sendqueue에 등록
 	for (auto _clientinfo_ptr : inChatRoom->m_participants)
 	{
+		OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
+		PacketUtil::PackPacket(*_stream, PROTOCOL::Chat, msg);
+
+		// _stream -> packet
+		SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
 		m_sendQueue.push(
 			std::pair<ClientInfoPtr, SendPacketPtr>(_clientinfo_ptr, _sendpacket)
 		);

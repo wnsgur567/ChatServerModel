@@ -46,11 +46,14 @@ enum class ClientState : StateType
 	WaitingRoom				= 1 << 20,		// 채팅 대기실 (방 선택)
 	WaitingRoom_send		= 1 << 21,		// 채팅 대기실 (방 선택)
 
-	JoinningChatRoom		= 1 << 22,		// 채팅방 접속 중
-	JoinningChatRoom_send	= 1 << 23,		// 채팅방 접속 중
+	EnterChatRoom			= 1 << 22,		// 채팅방 접속 중
+	EnterChatRoom_send		= 1 << 23,		// 채팅방 접속 중
 
 	JoinedChatRoom			= 1 << 24,		// 채팅방 접속 완료
 	JoinedChatRoom_send		= 1 << 25,		// 채팅방 접속 완료
+
+	ExitChatRoom			= 1<< 26,
+	ExitChatRoom_send		= 1 << 27,
 #pragma endregion
 
 	
