@@ -151,6 +151,7 @@
     <ClInclude Include="TCPSocket.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="base.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MemoryStream.cpp" />

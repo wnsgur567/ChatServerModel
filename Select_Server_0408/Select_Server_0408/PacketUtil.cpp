@@ -129,6 +129,14 @@ RecvState PacketUtil::PacketRecv(const TCPSocketPtr inSock, RecvPacketPtr inoutP
 #pragma endregion
 
 #pragma region PACK
+void PacketUtil::PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol)
+{
+	int size = 0;
+	size = sizeof(inProtocol);
+	outOutputStream.Write(size);
+	outOutputStream.Write(&inProtocol, sizeof(inProtocol));
+}
+
 void PacketUtil::PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol, const char* str1)
 {
 	int size = 0;

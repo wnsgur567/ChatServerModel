@@ -95,6 +95,8 @@ enum class myState
 	Max
 };
 
+extern CRITICAL_SECTION g_critical_section;
+
 class MyInfo;
 
 class OutputMemoryStream;

@@ -13,7 +13,10 @@ DWORD WINAPI RecvThread(LPVOID arg)
 	while (false == endflag)
 	{
 		_recvpacket->Clear();
-		PacketUtil::PacketRecv(m_sock, _recvpacket);
+		RecvState _state = PacketUtil::PacketRecv(m_sock, _recvpacket);
+		if (_state == RecvState::ClientEnd)
+			return -1;
+
 		auto _stream = _recvpacket->ToStreamPtr();
 		PROTOCOL protocol = PacketUtil::GetProtocol(*_stream);
 		switch (protocol)
@@ -49,10 +52,7 @@ DWORD WINAPI RecvThread(LPVOID arg)
 			NetworkManager::sInstance->m_myInfo.SetState(myState::Wait);			// ´ë±â state
 			ResetEvent(NetworkManager::sInstance->m_myInfo.hChatting);				// chatting event off
 			break;
-		case PROTOCOL::Disconnect:
-			ZeroMemory(msg, 512);
-			PacketUtil::UnPackPacket(*_stream, msg);
-			printf(msg);
+		case PROTOCOL::Disconnect:			
 			endflag = true;
 			NetworkManager::sInstance->m_myInfo.SetState(myState::End);
 			break;

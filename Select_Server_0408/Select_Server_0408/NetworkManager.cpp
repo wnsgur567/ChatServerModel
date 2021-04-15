@@ -57,6 +57,8 @@ bool NetworkManager::DoFrame()
 #pragma region send_recv_처리부
 
 	// recv 처리 (result_read_sockets)
+	// recv() 를 수행합니다
+	// 만들어진 recvpacket을 queue 에 등록합니다
 	for (auto& sock : result_read_sockets)
 	{
 		if (sock == m_listenSock)
@@ -107,7 +109,7 @@ bool NetworkManager::DoFrame()
 	}
 
 	// send 처리 (result_write_sockets)
-	// 사실상 등록한 모든 소켓이 나옴
+	// Sendpacket 을 만들어 queue 에 등록합니다
 	for (auto& sock : result_write_sockets)
 	{	// send queue 에 등록
 		// 패킷 자체는 recv queue 처리과정에서 이미 다 만들어져 있음			
@@ -123,17 +125,19 @@ bool NetworkManager::DoFrame()
 		OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
 		switch (_clientinfo_ptr->GetState())
 		{
-		case ClientState::Standby_send:					
+		case ClientState::Standby_send:
 			PacketUtil::PackPacket(*_stream, PROTOCOL::Init, MessageMaker::Get_InitMSG());
 			_sendpacket = std::make_shared<SendPacket>(_stream);
 			m_sendQueue.push(
-				std::pair<ClientInfoPtr, SendPacketPtr>(_clientinfo_ptr, _sendpacket)			
+				std::pair<ClientInfoPtr, SendPacketPtr>(_clientinfo_ptr, _sendpacket)
 			);
 
 			break;
 
 		case ClientState::UnstableConnection_send:
+			// 
 			break;
+
 		case ClientState::Disconnected_send:
 		{
 			const char* msg = MessageMaker::Get_Disconnected();
@@ -146,20 +150,32 @@ bool NetworkManager::DoFrame()
 			);
 		}
 		break;
+
 		case ClientState::WaitingRoom_send:
+		{
 			SendChatRoomList(_clientinfo_ptr);
-			_clientinfo_ptr->SetState(ClientState::EnterChatRoom);
-			break;
+		}
+		break;
 
 		case ClientState::EnterChatRoom_send:
+		{
+			ChatRoomPtr _room_ptr = GetChatRoom(_clientinfo_ptr->GetChatRoomID());
+			SendEnterRoomMsg(_room_ptr, _clientinfo_ptr->GetName().c_str());
+		}
+		break;
 
-			break;
 		case ClientState::JoinedChatRoom_send:
 
 			break;
+
 		case ClientState::ExitChatRoom_send:
-			break;
-		
+		{
+			ChatRoomPtr _room_ptr = GetChatRoom(_clientinfo_ptr->GetChatRoomID());
+			SendExitRoomMsg(_room_ptr, _clientinfo_ptr->GetName().c_str());
+			_room_ptr->ExitRoom(_clientinfo_ptr);
+		}
+		break;
+
 		default:
 			printf("for : result write sockets // client state switch문 확인\n");
 			break;
@@ -232,7 +248,7 @@ void NetworkManager::HandleNewClient()
 	// 클라이언트 정보 셋팅
 	_newClient->SetIsConnected(true);
 	_newClient->SetState(ClientState::Standby_send);	// 바로 메세지 보내도록
-	
+
 
 	++m_new_clientID;
 }
@@ -303,6 +319,8 @@ void NetworkManager::UpdateWriteSockets()
 	}
 }
 
+// 이미 recv를 수행하여 만들어진 RecvPacket을 처리합니다
+// 모든 처리가 긑나면 state를 변경합니다
 void NetworkManager::HandleRecvQueue()
 {
 	while (false == m_recvQueue.empty())
@@ -342,9 +360,7 @@ void NetworkManager::HandleRecvQueue()
 				_clientinfo_ptr->SetChatRoomID(selected);
 				_room_ptr->EnterRoom(_clientinfo_ptr);
 
-				SendEnterRoomMsg(_room_ptr, _clientinfo_ptr->GetName().c_str());
-
-				_clientinfo_ptr->SetState(ClientState::JoinedChatRoom_send);
+				_clientinfo_ptr->SetState(ClientState::EnterChatRoom_send);
 			}
 		}
 		break;
@@ -360,26 +376,28 @@ void NetworkManager::HandleRecvQueue()
 			}
 			else
 			{
-				SendChatMsg(_room_ptr, _clientinfo_ptr->GetName().c_str(), buf);				
+				SendChatMsg(_room_ptr, _clientinfo_ptr->GetName().c_str(), buf);
 
 				_clientinfo_ptr->SetState(ClientState::JoinedChatRoom_send);
 			}
 		}
 		break;
 		case PROTOCOL::ExitChatRoom:
-			_clientinfo_ptr->SetState(ClientState::Standby_send);
-			break;			
+			_clientinfo_ptr->SetState(ClientState::ExitChatRoom_send);
+			break;
 		case PROTOCOL::Disconnect:
-
-			_clientinfo_ptr->SetState(ClientState::Disconnected);
+			_clientinfo_ptr->SetState(ClientState::Disconnected_send);
 			break;
 		}
 	}
 }
 
+// 클라이언트에게 실제 데이터 전송하는 곳 send()
+// 모든 데이터를 전송하면 state를 변경합니다
 void NetworkManager::HandleSendQueue()
 {
 	// 처리가 덜된 패킷들을 담을 임시 큐
+	// 패킷에 번호를 부여하는걸로 대체할 예정
 	queue<std::pair<ClientInfoPtr, SendPacketPtr>> tmp_queue;
 
 	while (false == m_sendQueue.empty())
@@ -390,48 +408,58 @@ void NetworkManager::HandleSendQueue()
 		auto _packet = item.second;
 		m_sendQueue.pop();
 
-		// recv 에서 클라이언트가 종료된걸 catch 한 경우
+		// recv 에서 클라이언트가 강제 종료된걸 catch 한 경우도 있으니 패킷 만들겠음
 		if (_clientinfo_ptr->GetState() == ClientState::Disconnected_send)
 		{
-			HandleDisconnectedClient(_clientinfo_ptr->GetID());
+			// 종료 패킷 만들기
+			OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
+			PacketUtil::PackPacket(*_stream, PROTOCOL::Disconnect);
+			_packet = std::make_shared<SendPacket>(_stream);					
+		}
+		
+		// send send send !!
+		SendState _sendResult = PacketUtil::PacketSend(_clientinfo_ptr->GetTCPSocket(), _packet);
+
+		// 전송이 완료됬으니
+		// State 에 따라 다음 State로 바꾸기
+		if (SendState::Completed == _sendResult)
+		{	// 전부다 보냈으면
+			// change state
+			switch (_clientinfo_ptr->GetState())
+			{
+			case ClientState::Standby_send:
+				_clientinfo_ptr->SetState(ClientState::WaitingRoom_send);	// TODO : WaitingRoom_send
+				break;
+
+				// send 에서 종료를 catch 한 경우
+			case ClientState::Disconnected_send:
+				// 접속을 종료시킴
+				HandleDisconnectedClient(_clientinfo_ptr->GetID());
+				break;
+
+			case ClientState::WaitingRoom_send:
+				_clientinfo_ptr->SetState(ClientState::EnterChatRoom);
+				break;
+
+			case ClientState::EnterChatRoom_send:
+			case ClientState::JoinedChatRoom_send:
+			{
+				_clientinfo_ptr->SetState(ClientState::JoinedChatRoom_send);
+			}
+			break;
+			case ClientState::ExitChatRoom_send:
+				_clientinfo_ptr->SetState(ClientState::Standby_send);
+				break;
+
+			default:
+				printf("change state 미등록!!!\n");
+				break;
+			}
 		}
 		else
-		{
-			// send send send !!
-			SendState _sendResult = PacketUtil::PacketSend(_clientinfo_ptr->GetTCPSocket(), _packet);
-
-			if (SendState::Completed == _sendResult)
-			{	// 전부다 보냈으면
-				// change state
-				switch (_clientinfo_ptr->GetState())
-				{
-				case ClientState::Standby_send:
-					_clientinfo_ptr->SetState(ClientState::WaitingRoom_send);	// TODO : WaitingRoom_send
-					break;
-
-					// send 에서 종료를 catch 한 경우
-				case ClientState::Disconnected_send:
-					// 접속을 종료시킴
-					HandleDisconnectedClient(_clientinfo_ptr->GetID());
-					break;
-
-				case ClientState::JoinedChatRoom_send:
-				{
-					_clientinfo_ptr->SetState(ClientState::JoinedChatRoom);
-				}
-				break;
-				default:
-					printf("change state 미등록!!!\n");
-					break;
-				}
-			}
-			else
-			{	// 남았으면 임시 큐에 등록 시킴
-				tmp_queue.push(item);
-			}
+		{	// 남았으면 임시 큐에 등록 시킴
+			tmp_queue.push(item);
 		}
-
-
 	}
 
 	// 남은놈들 send queue 에 재등록 , 다음 프레임에 다시 처리
@@ -508,7 +536,7 @@ void NetworkManager::SendEnterRoomMsg(ChatRoomPtr inChatRoom, const char* inName
 {
 	char msg[BUFSIZE];
 	ZeroMemory(msg, BUFSIZE);
-	MessageMaker::Get_EnterRoomMsg(msg, inName);	
+	MessageMaker::Get_EnterRoomMsg(msg, inName);
 
 	// sendqueue에 등록
 	for (auto _clientinfo_ptr : inChatRoom->m_participants)
@@ -524,11 +552,11 @@ void NetworkManager::SendEnterRoomMsg(ChatRoomPtr inChatRoom, const char* inName
 }
 
 void NetworkManager::SendExitRoomMsg(ChatRoomPtr inChatRoom, const char* inName)
-{	
+{
 	char msg[BUFSIZE];
 	ZeroMemory(msg, BUFSIZE);
 	MessageMaker::Get_ExitRoomMsg(msg, inName);
-	
+
 
 	// sendqueue에 등록
 
@@ -546,7 +574,7 @@ void NetworkManager::SendExitRoomMsg(ChatRoomPtr inChatRoom, const char* inName)
 }
 
 void NetworkManager::SendChatMsg(ChatRoomPtr inChatRoom, const char* inName, const char* inMsg)
-{	
+{
 	char msg[BUFSIZE];
 	ZeroMemory(msg, BUFSIZE);
 	MessageMaker::Get_ChatMsg(msg, inName, inMsg);

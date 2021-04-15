@@ -111,6 +111,7 @@ public:
 	static SendState PacketSend(const TCPSocketPtr inSock, SendPacketPtr inoutPacket);
 	static RecvState PacketRecv(const TCPSocketPtr inSock, RecvPacketPtr inoutPacket);
 
+	static void PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol);
 	static void PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol, const char* str1);
 	static void PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol, const int inNum);
 	static void PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol, const int inNum, const char* str1);

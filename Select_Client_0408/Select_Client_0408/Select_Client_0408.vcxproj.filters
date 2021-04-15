@@ -77,5 +77,8 @@
     <ClCompile Include="RecvThread.cpp">
       <Filter>소스 파일\Client</Filter>
     </ClCompile>
+    <ClCompile Include="base.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
