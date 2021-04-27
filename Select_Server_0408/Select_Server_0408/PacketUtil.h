@@ -4,23 +4,32 @@ class RecvPacket
 {
 	friend class PacketUtil;
 private:
-	char m_buf[BUFSIZE];
+	ClientInfoWeakPtr m_wClientPtr;
+	unsigned int	m_packetID;					// 아직 recv 는 사용 안함
 
-	RecvState m_state;
+	char			m_buf[BUFSIZE];
+
+	RecvState		m_state;
 	int				m_sizebytes;				// size part / 현재 recv 수치
 	const int		m_target_sizebytes;			// size part / 목표 recv 수치
 	int				m_recvbytes;				// 현재 recv 수치
 	int				m_target_recvbytes;			// 목표 recv 수치
 public:
-	RecvPacket() :
+	RecvPacket(ClientInfoPtr inClient) :
+		m_wClientPtr(inClient),
+		m_packetID(inClient->GetNewRecvPacketID()),
 		m_state(RecvState::Idle),
 		m_sizebytes(0),
 		m_target_sizebytes(sizeof(int)),
 		m_recvbytes(0),
 		m_target_recvbytes(0)
-	{ }
+	{ 
+		m_wClientPtr.lock()->IncreaseNewRecvPacketID();
+	}
 
 	RecvPacket(const RecvPacket& _inSrc) :
+		m_wClientPtr(_inSrc.m_wClientPtr),
+		m_packetID(m_wClientPtr.lock()->GetNewRecvPacketID()),
 		m_state(_inSrc.m_state),
 		m_sizebytes(_inSrc.m_sizebytes),
 		m_target_sizebytes(_inSrc.m_target_sizebytes),
@@ -28,6 +37,12 @@ public:
 		m_target_recvbytes(_inSrc.m_target_recvbytes)
 	{
 		memcpy(m_buf, _inSrc.m_buf, static_cast<size_t> (m_recvbytes));
+		m_wClientPtr.lock()->IncreaseNewRecvPacketID();
+	}
+
+	unsigned int GetID() const
+	{
+		return m_packetID;
 	}
 
 	const char* GetBuf() const
@@ -38,6 +53,8 @@ public:
 	{
 		return m_state;
 	}
+
+
 	void SetState(RecvState inState)
 	{
 		m_state = inState;
@@ -72,19 +89,30 @@ class SendPacket
 {
 	friend class PacketUtil;
 private:
-	OutputMemoryStreamPtr streamPtr;		// buffer는 여기 안에 
+	OutputMemoryStreamPtr streamPtr;			// buffer는 여기 안에 
+
+	ClientInfoWeakPtr m_wClientPtr;
+	unsigned int	m_packetID;
 
 	SendState		m_state;
 	int				m_sendbytes;				// 현재 send 수치
 	int				m_target_sendbytes;			// 목표 send 수치
-
 public:
-	SendPacket(OutputMemoryStreamPtr inStreamPtr)
+	SendPacket(OutputMemoryStreamPtr inStreamPtr,ClientInfoPtr inClient)
 		:streamPtr(inStreamPtr),
+		m_wClientPtr(inClient),
+		m_packetID(inClient->GetNewSendPacketID()),
 		m_state(SendState::Idle),
 		m_sendbytes(0),
 		m_target_sendbytes(inStreamPtr->GetLength())
-	{ }
+	{ 
+		m_wClientPtr.lock()->IncreaseNewSendPacketID();
+	}
+
+	unsigned int GetID() const
+	{
+		return m_packetID;
+	}
 
 	SendState GetState() const
 	{
@@ -108,8 +136,8 @@ public:
 class PacketUtil
 {
 public:
-	static SendState PacketSend(const TCPSocketPtr inSock, SendPacketPtr inoutPacket);
-	static RecvState PacketRecv(const TCPSocketPtr inSock, RecvPacketPtr inoutPacket);
+	static SendState PacketSend(ClientInfoPtr inClient, SendPacketPtr inoutPacket);
+	static RecvState PacketRecv(ClientInfoPtr inClient, RecvPacketPtr inoutPacket);
 
 	static void PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol);
 	static void PackPacket(OutputMemoryStream& outOutputStream, const PROTOCOL inProtocol, const char* str1);

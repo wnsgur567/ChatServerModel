@@ -19,39 +19,21 @@
     <Filter Include="헤더 파일\ChattingRoom">
       <UniqueIdentifier>{ed156788-0836-4543-b97e-f51aab5d4e47}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Stream&amp;Packet">
+      <UniqueIdentifier>{b5ad96e2-9535-4a94-bb32-65adf2069321}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Linking">
+      <UniqueIdentifier>{946d5ae3-ee49-4bf4-aac1-d4e90199fbb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Network">
+      <UniqueIdentifier>{80f65bcc-00b2-4afb-9f37-d18b7e6fa864}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="base.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Packet.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="MessageMaker.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="TCPSocket.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="SocketAddress.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="SocketUtil.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkManager.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ClientInfo.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Server.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryStream.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketUtil.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Process.h">
@@ -63,37 +45,61 @@
     <ClInclude Include="ChatRoom.h">
       <Filter>헤더 파일\ChattingRoom</Filter>
     </ClInclude>
+    <ClInclude Include="MemoryStream.h">
+      <Filter>소스 파일\Stream&amp;Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketUtil.h">
+      <Filter>소스 파일\Stream&amp;Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="base.h">
+      <Filter>소스 파일\Linking</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkManager.h">
+      <Filter>소스 파일\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketAddress.h">
+      <Filter>소스 파일\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketUtil.h">
+      <Filter>소스 파일\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="TCPSocket.h">
+      <Filter>소스 파일\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Server.h">
+      <Filter>소스 파일\Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="base.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="TCPSocket.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="SocketUtil.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ClientInfo.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkManager.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Server.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="MemoryStream.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="PacketUtil.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="MessageMaker.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryStream.cpp">
+      <Filter>소스 파일\Stream&amp;Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketUtil.cpp">
+      <Filter>소스 파일\Stream&amp;Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="base.cpp">
+      <Filter>소스 파일\Linking</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkManager.cpp">
+      <Filter>소스 파일\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientInfo.cpp">
+      <Filter>소스 파일\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketUtil.cpp">
+      <Filter>소스 파일\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Server.cpp">
+      <Filter>소스 파일\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="TCPSocket.cpp">
+      <Filter>소스 파일\Network</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

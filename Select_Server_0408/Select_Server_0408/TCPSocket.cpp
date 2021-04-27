@@ -1,7 +1,7 @@
 #include "base.h"
 
 TCPSocket::TCPSocket(SOCKET inSocket)
-	: m_socket(inSocket)
+	: m_socket(inSocket)	
 {
 
 }

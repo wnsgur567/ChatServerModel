@@ -146,7 +146,6 @@
     <ClInclude Include="MemoryStream.h" />
     <ClInclude Include="MessageMaker.h" />
     <ClInclude Include="NetworkManager.h" />
-    <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketUtil.h" />
     <ClInclude Include="Process.h" />
     <ClInclude Include="Server.h" />

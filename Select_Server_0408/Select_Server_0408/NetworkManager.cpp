@@ -75,18 +75,18 @@ bool NetworkManager::DoFrame()
 			if (nullptr == _clientinfo_ptr->GetRecvPacketPtr().get())
 			{	// 이전에 처리하던게 없으면... 
 				// 패킷 새로 파고
-				_recvpacket = std::make_shared<RecvPacket>();
+				_recvpacket = std::make_shared<RecvPacket>(_clientinfo_ptr);
 				_recvpacket->SetState(RecvState::Size);
 
 				// recv
-				ret_state = PacketUtil::PacketRecv(sock, _recvpacket);
+				ret_state = PacketUtil::PacketRecv(_clientinfo_ptr, _recvpacket);
 			}
 			else
 			{	// 하던 작업이 있으면
 				_recvpacket = _clientinfo_ptr->GetRecvPacketPtr();
 
 				// recv
-				ret_state = PacketUtil::PacketRecv(sock, _recvpacket);
+				ret_state = PacketUtil::PacketRecv(_clientinfo_ptr, _recvpacket);
 			}
 
 			// complete 된놈들만 큐에 넣어
@@ -127,7 +127,7 @@ bool NetworkManager::DoFrame()
 		{
 		case ClientState::Standby_send:
 			PacketUtil::PackPacket(*_stream, PROTOCOL::Init, MessageMaker::Get_InitMSG());
-			_sendpacket = std::make_shared<SendPacket>(_stream);
+			_sendpacket = std::make_shared<SendPacket>(_stream, _clientinfo_ptr);
 			m_sendQueue.push(
 				std::pair<ClientInfoPtr, SendPacketPtr>(_clientinfo_ptr, _sendpacket)
 			);
@@ -143,7 +143,7 @@ bool NetworkManager::DoFrame()
 			const char* msg = MessageMaker::Get_Disconnected();
 			PacketUtil::PackPacket(*_stream, PROTOCOL::Disconnect, msg);
 			// stream -> packet
-			_sendpacket = std::make_shared<SendPacket>(_stream);
+			_sendpacket = std::make_shared<SendPacket>(_stream, _clientinfo_ptr);
 			// 만든 패킷 queue 에 집어넣기
 			m_sendQueue.push(
 				std::pair<ClientInfoPtr, SendPacketPtr>(_clientinfo_ptr, _sendpacket)
@@ -408,17 +408,25 @@ void NetworkManager::HandleSendQueue()
 		auto _packet = item.second;
 		m_sendQueue.pop();
 
+		// 이번 순번이 아니면
+		if (false == _clientinfo_ptr->IsSendTurn(_packet->GetID()))
+		{
+			m_sendQueue.push(tmp_queue.front());
+			m_sendQueue.pop();
+			continue;
+		}
+
 		// recv 에서 클라이언트가 강제 종료된걸 catch 한 경우도 있으니 패킷 만들겠음
 		if (_clientinfo_ptr->GetState() == ClientState::Disconnected_send)
 		{
 			// 종료 패킷 만들기
 			OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
 			PacketUtil::PackPacket(*_stream, PROTOCOL::Disconnect);
-			_packet = std::make_shared<SendPacket>(_stream);					
+			_packet = std::make_shared<SendPacket>(_stream, _clientinfo_ptr);
 		}
 		
 		// send send send !!
-		SendState _sendResult = PacketUtil::PacketSend(_clientinfo_ptr->GetTCPSocket(), _packet);
+		SendState _sendResult = PacketUtil::PacketSend(_clientinfo_ptr, _packet);
 
 		// 전송이 완료됬으니
 		// State 에 따라 다음 State로 바꾸기
@@ -522,7 +530,7 @@ void NetworkManager::SendChatRoomList(ClientInfoPtr inClient)
 	MessageMaker::Get_ChatRoomList(msg, _list);
 	PacketUtil::PackPacket(*_stream, PROTOCOL::WaitingRoom_Menu, msg);
 	// _stream -> packet
-	SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
+	SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream, inClient);
 
 	// sendqueue에 등록
 	m_sendQueue.push(
@@ -544,7 +552,7 @@ void NetworkManager::SendEnterRoomMsg(ChatRoomPtr inChatRoom, const char* inName
 		OutputMemoryStreamPtr _stream = std::make_shared<OutputMemoryStream>();
 		PacketUtil::PackPacket(*_stream, PROTOCOL::EnterChatRoom, msg);
 		// _stream -> packet
-		SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
+		SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream, _clientinfo_ptr);
 		m_sendQueue.push(
 			std::pair<ClientInfoPtr, SendPacketPtr>(_clientinfo_ptr, _sendpacket)
 		);
@@ -566,7 +574,7 @@ void NetworkManager::SendExitRoomMsg(ChatRoomPtr inChatRoom, const char* inName)
 		PacketUtil::PackPacket(*_stream, PROTOCOL::ExitChatRoom, msg);
 
 		// _stream -> packet
-		SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
+		SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream,_clientinfo_ptr);
 		m_sendQueue.push(
 			std::pair<ClientInfoPtr, SendPacketPtr>(_clientinfo_ptr, _sendpacket)
 		);
@@ -587,7 +595,7 @@ void NetworkManager::SendChatMsg(ChatRoomPtr inChatRoom, const char* inName, con
 		PacketUtil::PackPacket(*_stream, PROTOCOL::Chat, msg);
 
 		// _stream -> packet
-		SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream);
+		SendPacketPtr _sendpacket = std::make_shared<SendPacket>(_stream, _clientinfo_ptr);
 		m_sendQueue.push(
 			std::pair<ClientInfoPtr, SendPacketPtr>(_clientinfo_ptr, _sendpacket)
 		);

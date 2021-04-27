@@ -146,17 +146,18 @@ using RecvPacketPtr = std::shared_ptr<RecvPacket>;
 using SendPacketPtr = std::shared_ptr<SendPacket>;
 using TCPSocketPtr = std::shared_ptr<TCPSocket>;
 using ClientInfoPtr = std::shared_ptr<ClientInfo>;
+using ClientInfoWeakPtr = std::weak_ptr<ClientInfo>;
 using ChatRoomPtr = std::shared_ptr<ChatRoom>;
 
 
 #include "MemoryStream.h"
-#include "PacketUtil.h"
 #include "MessageMaker.h"
 #include "SocketAddress.h"
 #include "TCPSocket.h"
 #include "SocketUtil.h"
-#include "Packet.h"
+
 #include "ClientInfo.h"
+#include "PacketUtil.h"
 #include "NetworkManager.h"
 #include "Server.h"
 

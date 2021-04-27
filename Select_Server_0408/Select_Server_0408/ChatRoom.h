@@ -2,22 +2,22 @@
 
 class ChatRoom
 {
-	using ParticipantsIterator = vector<ClientInfoPtr>::iterator;
-	using Const_ParticipantsIterator = vector<ClientInfoPtr>::const_iterator;
+	using ParticipantsIterator = list<ClientInfoPtr>::iterator;
+	using Const_ParticipantsIterator = list<ClientInfoPtr>::const_iterator;
 private:
-	int m_ChatRoomID;						// 방 ID
-	string m_name;							// 방 이름
-	int m_maxParticipant;					// 최대 참가 인원 수
+	int				 m_ChatRoomID;						// 방 ID
+	string			 m_name;							// 방 이름
+	int				 m_maxParticipant;					// 최대 참가 인원 수
 
-	ClientInfoPtr		  m_owner;			// 방장
+	ClientInfoPtr	 m_owner;							// 방장
 public:
-	vector<ClientInfoPtr> m_participants;	// 방 참가자
+	list<ClientInfoPtr> m_participants;				// 방 참가자
 public:
 	ChatRoom(const string& inName, const int inID, int inMaxParticipant)
 		: m_ChatRoomID(inID), m_name(inName), m_maxParticipant(inMaxParticipant),
 		m_owner(nullptr)
 	{
-		m_participants.reserve(m_maxParticipant);
+		
 	}
 
 	int		 GetID() const { return m_ChatRoomID; }
@@ -43,7 +43,7 @@ public:
 	}
 	void ExitRoom(ClientInfoPtr inClient)
 	{
-		for (vector< ClientInfoPtr>::iterator it = m_participants.begin(); it != m_participants.end(); it++)
+		for (ParticipantsIterator it = m_participants.begin(); it != m_participants.end(); it++)
 		{
 			if ((*it)->GetID() == inClient->GetID())
 			{
@@ -57,11 +57,11 @@ public:
 		}
 	}
 
-	void SendAll(const PROTOCOL inProtocol, const char* inName, void (NetworkManager::* Action)(void))
+	void SendAll(const PROTOCOL inProtocol, const char* inName, void (NetworkManager::* SendAction)(void))
 	{
 
 
-		for (vector<ClientInfoPtr>::iterator it = m_participants.begin(); it != m_participants.end(); it++)
+		for (ParticipantsIterator it = m_participants.begin(); it != m_participants.end(); it++)
 		{
 
 		}

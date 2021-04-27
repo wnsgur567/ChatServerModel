@@ -1,7 +1,7 @@
 #include "base.h"
 
 #pragma region PACKET
-SendState PacketUtil::PacketSend(const TCPSocketPtr inSock, SendPacketPtr inoutPacket)
+SendState PacketUtil::PacketSend(ClientInfoPtr inClient, SendPacketPtr inoutPacket)
 {
 	int _sendbytes = 0;
 	switch (inoutPacket->GetState())
@@ -12,7 +12,7 @@ SendState PacketUtil::PacketSend(const TCPSocketPtr inSock, SendPacketPtr inoutP
 	{
 		// send()
 		_sendbytes = send(
-			inSock->GetSock(),													// sock
+			inClient->GetTCPSocket()->GetSock(),								// sock
 			inoutPacket->streamPtr->GetBufferPtr() + inoutPacket->m_sendbytes,	// buf
 			inoutPacket->m_target_sendbytes - inoutPacket->m_sendbytes,			// len
 			0
@@ -36,6 +36,8 @@ SendState PacketUtil::PacketSend(const TCPSocketPtr inSock, SendPacketPtr inoutP
 
 		// 다 보내진 경우
 		inoutPacket->m_state = SendState::Completed;
+		// 보냇 패킷 카운팅
+		inClient->IncreaseNextSendPacketID();
 	}
 	break;
 	}
@@ -47,7 +49,7 @@ SendState PacketUtil::PacketSend(const TCPSocketPtr inSock, SendPacketPtr inoutP
 // packet 의 buf 에 recv
 // return value 가 complete 가 되면
 // buffer 를 inputstream 에 저장해줄 것
-RecvState PacketUtil::PacketRecv(const TCPSocketPtr inSock, RecvPacketPtr inoutPacket)
+RecvState PacketUtil::PacketRecv(ClientInfoPtr inClient, RecvPacketPtr inoutPacket)
 {
 	int _recvbytes = 0;
 #pragma region SIZE
@@ -60,7 +62,7 @@ RecvState PacketUtil::PacketRecv(const TCPSocketPtr inSock, RecvPacketPtr inoutP
 	{
 		// recv() _ sizepart
 		_recvbytes = recv(
-			inSock->GetSock(),														// sock
+			inClient->GetTCPSocket()->GetSock(),									// sock
 			((char*)&(inoutPacket->m_target_recvbytes)) + inoutPacket->m_sizebytes,	// buf
 			(inoutPacket->m_target_sizebytes - inoutPacket->m_sizebytes),			// len
 			0);	// flag		
@@ -98,7 +100,7 @@ RecvState PacketUtil::PacketRecv(const TCPSocketPtr inSock, RecvPacketPtr inoutP
 	{
 		// recv() _ datapart
 		_recvbytes = recv(
-			inSock->GetSock(),								// sock
+			inClient->GetTCPSocket()->GetSock(),			// sock
 			inoutPacket->m_buf + inoutPacket->m_recvbytes,	// buf
 			inoutPacket->m_target_recvbytes - inoutPacket->m_recvbytes,	// len
 			0	// flag

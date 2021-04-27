@@ -3,7 +3,7 @@
 class TCPSocket
 {
 private:
-	SOCKET m_socket;
+	SOCKET					m_socket;	
 public:
 	TCPSocket(SOCKET inSocket);		
 	~TCPSocket();
